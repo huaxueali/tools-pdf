@@ -19,11 +19,13 @@ Install dependencies with:
 
 ```bash
 pip install -r requirements.txt
+```
 
 ## Usage examples
 ### 1. Convert G(r) to g(r) and integrate the first shell
+```bash
 python example_usage.py --input data/std_Si.gr --rho0 0.04996026
-
+```
 This will:
 
 read the input G(r) file
@@ -36,13 +38,15 @@ integrate the first-shell coordination number
 
 save a plot of the integration region
 
-2. Fit the first-shell peak using a selected model
+### 2. Fit the first-shell peak using a selected model
+```bash
 python example_fit_usage.py --input data/std_Si_small_g.dat --fit-min 2.05 --fit-max 2.65 --model pseudo_voigt --baseline constant --rho0 0.04996026
-
+```
 Example with another model:
 
+```bash
 python example_fit_usage.py --input data/std_Si_small_g.dat --fit-min 2.05 --fit-max 2.65 --model gaussian --baseline constant --rho0 0.04996026
-
+```
 This will:
 
 fit the selected peak model
@@ -53,9 +57,10 @@ save a fitting report
 
 calculate coordination number if rho0 is provided
 
-3. Compare four fitting models
+### 3. Compare four fitting models
+```bash
 python example_compare_models.py --input data/std_Si_small_g.dat --fit-min 2.05 --fit-max 2.65 --rho0 0.04996026
-
+```
 This will:
 
 fit the same peak using four models
