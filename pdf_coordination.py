@@ -1,0 +1,267 @@
+"""
+pdf_coordination.py
+
+Utilities to integrate the first-shell coordination number from g(r).
+
+Main equation:
+    N = 4 * pi * rho0 * integral[r1:r2] (r^2 * g(r)) dr
+
+"""
+
+from __future__ import annotations
+
+import math
+from pathlib import Path
+from typing import Iterable, Tuple, Union, Optional
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+ArrayLike = Union[np.ndarray, Iterable[float]]
+
+
+def load_two_column_data(filepath: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load a text file containing two numeric columns, ignoring non-numeric lines.
+    """
+    rows = []
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 2:
+                continue
+            try:
+                rows.append((float(parts[0]), float(parts[1])))
+            except ValueError:
+                continue
+
+    if not rows:
+        raise ValueError(f"No numeric two-column data found in file: {filepath}")
+
+    data = np.array(rows, dtype=float)
+    return data[:, 0], data[:, 1]
+
+
+def find_first_peak_and_valleys(
+    r: ArrayLike,
+    g: ArrayLike,
+    peak_search_range: Tuple[float, float] = (1.5, 3.0),
+    left_search_min: float = 1.5,
+    right_search_max: float = 3.3,
+) -> dict:
+    """
+    Find the first-shell peak and simple left/right valleys.
+
+    Strategy:
+    - Peak = maximum g(r) in peak_search_range
+    - Left valley = minimum g(r) between left_search_min and peak position
+    - Right valley = minimum g(r) between peak position and right_search_max
+
+    This is a practical simple method, not a universal one.
+
+    Returns
+    -------
+    dict
+        Dictionary with indices and positions.
+    """
+    r = np.asarray(r, dtype=float)
+    g = np.asarray(g, dtype=float)
+
+    if r.shape != g.shape:
+        raise ValueError("r and g must have the same shape.")
+
+    peak_region = (r >= peak_search_range[0]) & (r <= peak_search_range[1])
+    peak_indices = np.where(peak_region)[0]
+    if len(peak_indices) == 0:
+        raise ValueError("No data points found in peak_search_range.")
+
+    peak_idx = peak_indices[np.argmax(g[peak_region])]
+
+    left_region = (r >= left_search_min) & (r < r[peak_idx])
+    left_indices = np.where(left_region)[0]
+    if len(left_indices) == 0:
+        raise ValueError("No data points found for left valley search.")
+    left_idx = left_indices[np.argmin(g[left_region])]
+
+    right_region = (r > r[peak_idx]) & (r <= right_search_max)
+    right_indices = np.where(right_region)[0]
+    if len(right_indices) == 0:
+        raise ValueError("No data points found for right valley search.")
+    right_idx = right_indices[np.argmin(g[right_region])]
+
+    return {
+        "peak_idx": int(peak_idx),
+        "left_idx": int(left_idx),
+        "right_idx": int(right_idx),
+        "r_peak": float(r[peak_idx]),
+        "r1": float(r[left_idx]),
+        "r2": float(r[right_idx]),
+        "g_peak": float(g[peak_idx]),
+        "g_left": float(g[left_idx]),
+        "g_right": float(g[right_idx]),
+    }
+
+
+def integrate_coordination_number(
+    r: ArrayLike,
+    g: ArrayLike,
+    rho0: float,
+    r1: float,
+    r2: float,
+) -> float:
+    """
+    Integrate coordination number from g(r).
+
+    Parameters
+    ----------
+    r, g : array-like
+        Arrays of r and g(r).
+    rho0 : float
+        Number density in atoms / Å^3.
+    r1, r2 : float
+        Integration limits in Å.
+
+    Returns
+    -------
+    float
+        Coordination number.
+    """
+    r = np.asarray(r, dtype=float)
+    g = np.asarray(g, dtype=float)
+
+    if rho0 <= 0:
+        raise ValueError("rho0 must be positive.")
+    if r1 >= r2:
+        raise ValueError("r1 must be smaller than r2.")
+
+    mask = (r >= r1) & (r <= r2)
+    if np.count_nonzero(mask) < 2:
+        raise ValueError("Not enough data points inside integration range.")
+
+    return 4.0 * math.pi * rho0 * np.trapezoid((r[mask] ** 2) * g[mask], r[mask])
+
+
+def integrate_first_shell_auto(
+    r: ArrayLike,
+    g: ArrayLike,
+    rho0: float,
+    peak_search_range: Tuple[float, float] = (1.5, 3.0),
+    left_search_min: float = 1.5,
+    right_search_max: float = 3.3,
+) -> dict:
+    """
+    Automatically find first peak/valleys and integrate first-shell CN.
+
+    Returns
+    -------
+    dict
+        Includes r1, r2, peak position, and coordination number.
+    """
+    peak_info = find_first_peak_and_valleys(
+        r,
+        g,
+        peak_search_range=peak_search_range,
+        left_search_min=left_search_min,
+        right_search_max=right_search_max,
+    )
+    ncoord = integrate_coordination_number(
+        r,
+        g,
+        rho0=rho0,
+        r1=peak_info["r1"],
+        r2=peak_info["r2"],
+    )
+    out = dict(peak_info)
+    out["coordination_number"] = float(ncoord)
+    return out
+
+
+def plot_integration_result(
+    r: ArrayLike,
+    g: ArrayLike,
+    r1: float,
+    r2: float,
+    peak_position: Optional[float] = None,
+    coordination_number: Optional[float] = None,
+    xlim: Tuple[float, float] = (0.5, 5.0),
+    outfile: Optional[Union[str, Path]] = None,
+    title: str = "First-shell integration from g(r)",
+) -> None:
+    """
+    Plot g(r) and highlight the integration region.
+    """
+    r = np.asarray(r, dtype=float)
+    g = np.asarray(g, dtype=float)
+
+    mask = (r >= r1) & (r <= r2)
+
+    plt.figure(figsize=(9, 5.8))
+    plt.plot(r, g, linewidth=1.6, label="g(r)")
+    plt.axvline(r1, linestyle="--", label=f"r1 = {r1:.3f} Å")
+    if peak_position is not None:
+        plt.axvline(peak_position, linestyle="--", label=f"peak = {peak_position:.3f} Å")
+    plt.axvline(r2, linestyle="--", label=f"r2 = {r2:.3f} Å")
+
+    region_label = "Integrated region"
+    if coordination_number is not None:
+        region_label += f"\\nN = {coordination_number:.3f}"
+    plt.fill_between(r[mask], g[mask], 0, alpha=0.25, label=region_label)
+
+    sel = (r >= xlim[0]) & (r <= xlim[1])
+    ymin = min(0.0, float(np.min(g[sel]))) - 0.2
+    ymax = float(np.max(g[sel])) + 0.4
+
+    plt.xlim(*xlim)
+    plt.ylim(ymin, ymax)
+    plt.xlabel("r (Å)")
+    plt.ylabel("g(r)")
+    plt.title(title)
+    plt.legend()
+    plt.tight_layout()
+
+    if outfile is not None:
+        plt.savefig(outfile, dpi=200)
+        plt.close()
+    else:
+        plt.show()
+
+
+def analyze_file_first_shell(
+    input_file: Union[str, Path],
+    rho0: float,
+    peak_search_range: Tuple[float, float] = (1.5, 3.0),
+    left_search_min: float = 1.5,
+    right_search_max: float = 3.3,
+    plot_file: Optional[Union[str, Path]] = None,
+) -> dict:
+    """
+    Load g(r) file, auto-analyze first shell, and optionally save a plot.
+
+    Returns
+    -------
+    dict
+        Analysis result.
+    """
+    r, g = load_two_column_data(input_file)
+    result = integrate_first_shell_auto(
+        r,
+        g,
+        rho0=rho0,
+        peak_search_range=peak_search_range,
+        left_search_min=left_search_min,
+        right_search_max=right_search_max,
+    )
+
+    if plot_file is not None:
+        plot_integration_result(
+            r,
+            g,
+            r1=result["r1"],
+            r2=result["r2"],
+            peak_position=result["r_peak"],
+            coordination_number=result["coordination_number"],
+            outfile=plot_file,
+        )
+
+    return result

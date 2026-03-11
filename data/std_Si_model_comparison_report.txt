@@ -1,0 +1,75 @@
+PDF peak-model comparison report
+==================================================
+
+rho0: 0.04996026 atoms/A^3
+
+Model: gaussian
+Baseline: constant
+Fit range: 2.0500 - 2.6500 Å
+R^2: 0.995634
+RMSE: 0.125819
+RSS: 0.316607
+Peak area: 1.264907
+Coordination number from fit: 4.420303
+Plot file: D:\work\PythonProject\tools-pdf\data\model_plots\std_Si_first_peak_gaussian.png
+Parameters:
+  p0: 5.3968998135
+  p1: 2.3575276003
+  p2: 0.0937441091
+  p3: -0.4682626067
+
+--------------------------------------------------
+
+Model: lorentzian
+Baseline: constant
+Fit range: 2.0500 - 2.6500 Å
+R^2: 0.985896
+RMSE: 0.226150
+RSS: 1.022874
+Peak area: 2.009661
+Coordination number from fit: 7.027464
+Plot file: D:\work\PythonProject\tools-pdf\data\model_plots\std_Si_first_peak_lorentzian.png
+Parameters:
+  p0: 6.7933355477
+  p1: 2.3576296427
+  p2: 0.1292461676
+  p3: -1.7648050406
+
+--------------------------------------------------
+
+Model: pseudo_voigt
+Baseline: constant
+Fit range: 2.0500 - 2.6500 Å
+R^2: 0.995634
+RMSE: 0.125819
+RSS: 0.316607
+Peak area: 1.264908
+Coordination number from fit: 4.420307
+Plot file: D:\work\PythonProject\tools-pdf\data\model_plots\std_Si_first_peak_pseudo_voigt.png
+Parameters:
+  p0: 5.3969002153
+  p1: 2.3575275855
+  p2: 0.0937441794
+  p3: 0.0000000000
+  p4: -0.4682643249
+
+--------------------------------------------------
+
+Model: voigt
+Baseline: constant
+Fit range: 2.0500 - 2.6500 Å
+R^2: 0.995634
+RMSE: 0.125824
+RSS: 0.316633
+Peak area: 1.264952
+Coordination number from fit: 4.420462
+Plot file: D:\work\PythonProject\tools-pdf\data\model_plots\std_Si_first_peak_voigt.png
+Parameters:
+  p0: 5.3494252622
+  p1: 2.3575276079
+  p2: 0.0937404420
+  p3: 0.0000100000
+  p4: -0.4683413292
+
+--------------------------------------------------
+

@@ -1,0 +1,5 @@
+model	baseline	R2	RMSE	peak_area	coord_num	plot_file
+gaussian	constant	0.995634	0.125819	1.264907	4.420303	data\model_plots\peak_fit_gaussian.png
+lorentzian	constant	0.985896	0.226150	2.009661	7.027464	data\model_plots\peak_fit_lorentzian.png
+pseudo_voigt	constant	0.995634	0.125819	1.264908	4.420307	data\model_plots\peak_fit_pseudo_voigt.png
+voigt	constant	0.995634	0.125824	1.264952	4.420462	data\model_plots\peak_fit_voigt.png
