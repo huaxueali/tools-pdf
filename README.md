@@ -20,8 +20,8 @@ Install dependencies with:
 ```bash
 pip install -r requirements.txt
 
-Usage examples
-1. Convert G(r) to g(r) and integrate the first shell
+## Usage examples
+### 1. Convert G(r) to g(r) and integrate the first shell
 python example_usage.py --input data/std_Si.gr --rho0 0.04996026
 
 This will:
