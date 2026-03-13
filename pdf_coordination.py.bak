@@ -21,6 +21,9 @@ ArrayLike = Union[np.ndarray, Iterable[float]]
 
 
 def load_two_column_data(filepath: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load a text file containing two numeric columns, ignoring non-numeric lines.
+    """
     rows = []
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
@@ -46,6 +49,9 @@ def find_first_peak_and_valleys(
     left_search_min: float = 1.5,
     right_search_max: float = 3.3,
 ) -> dict:
+    """
+    Find the first-shell peak and simple left/right valleys.
+    """
     r = np.asarray(r, dtype=float)
     g = np.asarray(g, dtype=float)
 
@@ -91,6 +97,9 @@ def integrate_coordination_number(
     r1: float,
     r2: float,
 ) -> float:
+    """
+    Integrate coordination number from g(r).
+    """
     r = np.asarray(r, dtype=float)
     g = np.asarray(g, dtype=float)
 
@@ -114,6 +123,9 @@ def integrate_first_shell_auto(
     left_search_min: float = 1.5,
     right_search_max: float = 3.3,
 ) -> dict:
+    """
+    Automatically find first peak/valleys and integrate first-shell CN.
+    """
     peak_info = find_first_peak_and_valleys(
         r,
         g,
@@ -130,7 +142,6 @@ def integrate_first_shell_auto(
     )
     out = dict(peak_info)
     out["coordination_number"] = float(ncoord)
-    out["mode"] = "auto"
     return out
 
 
@@ -142,6 +153,15 @@ def save_integration_data(
     r1: float,
     r2: float,
 ) -> None:
+    """
+    Save integration-related data for later custom plotting.
+
+    Output columns:
+    1. r
+    2. g(r)
+    3. in_region (0 or 1)
+    4. integrand = 4*pi*rho0*r^2*g(r)
+    """
     r = np.asarray(r, dtype=float)
     g = np.asarray(g, dtype=float)
 
@@ -161,6 +181,9 @@ def save_integration_region_data(
     r1: float,
     r2: float,
 ) -> None:
+    """
+    Save only the data points inside the integration region.
+    """
     r = np.asarray(r, dtype=float)
     g = np.asarray(g, dtype=float)
 
@@ -183,6 +206,9 @@ def plot_integration_result(
     outfile: Optional[Union[str, Path]] = None,
     title: str = "First-shell integration from g(r)",
 ) -> None:
+    """
+    Plot g(r) and highlight the integration region.
+    """
     r = np.asarray(r, dtype=float)
     g = np.asarray(g, dtype=float)
 
@@ -197,7 +223,7 @@ def plot_integration_result(
 
     region_label = "Integrated region"
     if coordination_number is not None:
-        region_label += f"\nN = {coordination_number:.3f}"
+        region_label += f"\\nN = {coordination_number:.3f}"
     plt.fill_between(r[mask], g[mask], 0, alpha=0.25, label=region_label)
 
     sel = (r >= xlim[0]) & (r <= xlim[1])
@@ -229,6 +255,9 @@ def analyze_file_first_shell(
     data_file: Optional[Union[str, Path]] = None,
     region_data_file: Optional[Union[str, Path]] = None,
 ) -> dict:
+    """
+    Load g(r) file, auto-analyze first shell, and optionally save plot and txt data.
+    """
     r, g = load_two_column_data(input_file)
     result = integrate_first_shell_auto(
         r,
@@ -268,80 +297,6 @@ def analyze_file_first_shell(
             rho0=rho0,
             r1=result["r1"],
             r2=result["r2"],
-        )
-
-    return result
-
-
-def analyze_file_with_manual_range(
-    input_file: Union[str, Path],
-    rho0: float,
-    r1: float,
-    r2: float,
-    plot_file: Optional[Union[str, Path]] = None,
-    data_file: Optional[Union[str, Path]] = None,
-    region_data_file: Optional[Union[str, Path]] = None,
-) -> dict:
-    r, g = load_two_column_data(input_file)
-
-    if r1 >= r2:
-        raise ValueError("r1 must be smaller than r2.")
-
-    peak_mask = (r >= r1) & (r <= r2)
-    if np.count_nonzero(peak_mask) < 2:
-        raise ValueError("Not enough data points inside the manual integration range.")
-
-    peak_idx_local = np.argmax(g[peak_mask])
-    peak_indices = np.where(peak_mask)[0]
-    peak_idx = peak_indices[peak_idx_local]
-
-    coordination_number = integrate_coordination_number(
-        r=r,
-        g=g,
-        rho0=rho0,
-        r1=r1,
-        r2=r2,
-    )
-
-    result = {
-        "peak_idx": int(peak_idx),
-        "r_peak": float(r[peak_idx]),
-        "r1": float(r1),
-        "r2": float(r2),
-        "g_peak": float(g[peak_idx]),
-        "coordination_number": float(coordination_number),
-        "mode": "manual",
-    }
-
-    if plot_file is not None:
-        plot_integration_result(
-            r,
-            g,
-            r1=r1,
-            r2=r2,
-            peak_position=result["r_peak"],
-            coordination_number=coordination_number,
-            outfile=plot_file,
-        )
-
-    if data_file is not None:
-        save_integration_data(
-            filepath=data_file,
-            r=r,
-            g=g,
-            rho0=rho0,
-            r1=r1,
-            r2=r2,
-        )
-
-    if region_data_file is not None:
-        save_integration_region_data(
-            filepath=region_data_file,
-            r=r,
-            g=g,
-            rho0=rho0,
-            r1=r1,
-            r2=r2,
         )
 
     return result

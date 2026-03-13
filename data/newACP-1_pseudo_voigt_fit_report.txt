@@ -1,0 +1,15 @@
+PDF peak fitting report
+Model: pseudo_voigt
+Baseline: constant
+Fit range: 1.2000 - 1.9000 Å
+R^2: 0.996154
+RMSE: 0.064258
+RSS: 0.099097
+Peak area: 1.070128
+Coordination number from fit: not calculated
+Parameters:
+  p0: 3.0875211426
+  p1: 1.5188830977
+  p2: 0.1405690801
+  p3: 0.0000000000
+  p4: -2.3366601671

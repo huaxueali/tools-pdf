@@ -1,0 +1,16 @@
+PDF peak fitting report
+Model: pearson_vii
+Baseline: linear
+Fit range: 1.9000 - 2.7700 Å
+R^2: 0.999175
+RMSE: 0.021242
+RSS: 0.013086
+Peak area: 1.006638
+Coordination number from fit: 5.990405
+Parameters:
+  p0: 2.3187491278
+  p1: 2.4322852326
+  p2: 0.2258389250
+  p3: 2.3898773101
+  p4: -0.5352043453
+  p5: 0.1519559135

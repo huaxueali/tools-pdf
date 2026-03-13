@@ -1,0 +1,14 @@
+Shoulder-supported baseline peak fitting report
+Model: pearson_vii
+r1: 1.200000
+r2: 1.800000
+R^2: 0.994059
+RMSE: 0.016983
+RSS: 0.008941
+Peak area: 0.183033
+Coordination number: 0.558073
+Parameters:
+  p0: 0.6318474345
+  p1: 1.4911737478
+  p2: 0.1646827129
+  p3: 100.0000000000
