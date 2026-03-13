@@ -90,3 +90,19 @@ peak fitting itself does not require rho0
 conversion from fitted peak area to coordination number does require rho0
 
 direct integration of g(r) to coordination number also requires rho0
+
+## Shoulder-supported baseline analysis
+
+The latest workflow supports **shoulder-supported baseline** analysis for `g(r)` peaks.  
+In this method, the line connecting the two shoulder points (`r1`, `r2`) is used as a **fixed baseline**, instead of using a free constant or linear baseline during fitting.
+
+This is useful when you want the baseline to be explicitly defined by the peak shoulders.
+
+---
+
+### 1. Shoulder baseline + Pearson VII fitting
+
+Command:
+
+```bash
+python example_shoulder_baseline.py --input .\data\ACP-B_small_g.dat --r1 2.1 --r2 2.77 --mode fit --model pearson_vii --rho0 0.0879
